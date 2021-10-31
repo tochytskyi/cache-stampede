@@ -16,11 +16,11 @@ func main() {
 	}
 
 	mysql.MysqlDb = mysql.Init()
+	defer mysql.MysqlDb.Close()
 
 	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/api/v1/login", login.LoginHandler)
+	http.HandleFunc("/api/v1/users/first", login.FirstUserHandler)
 
 	http.ListenAndServe(":"+httpPort, nil)
-
-	defer mysql.MysqlDb.Close()
 }
