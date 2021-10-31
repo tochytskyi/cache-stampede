@@ -15,8 +15,8 @@ type loginRequest struct {
 	Password string `json:"password"`
 }
 
-func LoginHandler(w http.ResponseWriter, request *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+func LoginHandler(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Content-Type", "application/json")
 
 	var loginRequest loginRequest
 	decoder := json.NewDecoder(request.Body)
@@ -24,7 +24,7 @@ func LoginHandler(w http.ResponseWriter, request *http.Request) {
 	err := decoder.Decode(&loginRequest)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(response, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -34,11 +34,33 @@ func LoginHandler(w http.ResponseWriter, request *http.Request) {
 
 	if err != nil {
 		log.Println(err)
+		http.Error(response, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	responseData := &responses.UserResponse{
+		Id:        user.Id,
+		Email:     user.Email,
+		Username:  user.Username,
+		CreatedAt: time.Unix(user.CreatedAt, 0).Format(time.RFC3339),
+		UpdatedAt: time.Unix(user.UpdatedAt, 0).Format(time.RFC3339),
+	}
+
+	json.NewEncoder(response).Encode(responseData)
+}
+
+func FirstUserHandler(w http.ResponseWriter, request *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	user, err := users.GetUserByEmailAndPassword("vtchtsk@gmail.com", "vtchtsk@gmail.com")
+
+	if err != nil {
+		log.Println(err)
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	response := responses.UserResponse{
+	response := &responses.UserResponse{
 		Id:        user.Id,
 		Email:     user.Email,
 		Username:  user.Username,
