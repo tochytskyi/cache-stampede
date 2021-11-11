@@ -43,8 +43,7 @@ func GetUserByEmailAndPassword(email string, password string) (models.User, erro
 func CreateUserByEmailAndPassword(email string, password string) (models.User, error) {
 	userModel, modelsCountInCache := users.AddUserToSave(email, password)
 
-	if float64(modelsCountInCache)-float64(rand.Intn(10))*math.Log(rand.Float64()) >= 100.0 {
-		createUserMutex.Lock()
+	if float64(modelsCountInCache)-float64(rand.Intn(20)+1)*math.Log(rand.Float64()) >= 500.0 {
 		stmt, err := mysql.MysqlDb.Prepare("INSERT INTO tmp (email,username,password,created,updated) VALUES (?,?,?,?,?)")
 		defer stmt.Close()
 
@@ -68,8 +67,6 @@ func CreateUserByEmailAndPassword(email string, password string) (models.User, e
 				log.Println("Raw inserted", v)
 			}
 		}
-
-		createUserMutex.Unlock()
 	}
 
 	return userModel, nil

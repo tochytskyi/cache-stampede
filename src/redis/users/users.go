@@ -10,12 +10,12 @@ import (
 	"github.com/tchtsk/treatfield-api/src/redis"
 )
 
-var createUserMutex sync.Mutex
+var cacheAccessMutex sync.Mutex
 
 func AddUserToSave(email string, password string) (models.User, int) {
-	createUserMutex.Lock()
+	cacheAccessMutex.Lock()
 
-	defer createUserMutex.Unlock()
+	defer cacheAccessMutex.Unlock()
 
 	model := models.User{
 		Email:     email,
@@ -58,6 +58,9 @@ func AddUserToSave(email string, password string) (models.User, int) {
 }
 
 func GetAndFlush() []models.User {
+	cacheAccessMutex.Lock()
+	defer cacheAccessMutex.Unlock()
+
 	currentValue, err := redis.GetInstance().Get("users").Result()
 	if err != nil {
 		log.Println("No data in cache", err)
@@ -67,7 +70,7 @@ func GetAndFlush() []models.User {
 	var currentValuesMap []models.User
 	json.Unmarshal([]byte(currentValue), &currentValuesMap)
 
-	redis.GetInstance().Set("users", "", 0)
+	Flush()
 
 	return currentValuesMap
 }
