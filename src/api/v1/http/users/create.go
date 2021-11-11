@@ -1,4 +1,4 @@
-package login
+package create
 
 import (
 	"encoding/json"
@@ -10,31 +10,29 @@ import (
 	"github.com/tchtsk/treatfield-api/src/mysql/users"
 )
 
-type loginRequest struct {
+type createRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func LoginHandler(response http.ResponseWriter, request *http.Request) {
+func CreateUserHandler(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("Content-Type", "application/json")
 
-	var loginRequest loginRequest
+	var requestPayload createRequest
 	decoder := json.NewDecoder(request.Body)
 
-	err := decoder.Decode(&loginRequest)
+	err := decoder.Decode(&requestPayload)
 
 	if err != nil {
 		http.Error(response, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	log.Println(loginRequest.Email)
-
-	user, err := users.GetUserByEmailAndPassword(loginRequest.Email, loginRequest.Password)
+	user, err := users.CreateUserByEmailAndPassword(requestPayload.Email, requestPayload.Password)
 
 	if err != nil {
 		log.Println(err)
-		http.Error(response, err.Error(), http.StatusNotFound)
+		http.Error(response, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -46,4 +44,8 @@ func LoginHandler(response http.ResponseWriter, request *http.Request) {
 	}
 
 	json.NewEncoder(response).Encode(responseData)
+}
+
+func ClearUserHandler(response http.ResponseWriter, request *http.Request) {
+	users.Clear()
 }

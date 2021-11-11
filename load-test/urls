@@ -1,0 +1,5 @@
+URL=http://127.0.0.1:5000/api/v1/users
+${URL} POST {"email": "test-user-1@gmail.com","password": "test-password"}
+${URL} POST {"email": "test-user-2@gmail.com","password": "test-password"}
+${URL} POST {"email": "test-user-3@gmail.com","password": "test-password"}
+${URL} POST {"email": "test-user-4@gmail.com","password": "test-password"}
